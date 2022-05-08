@@ -55,3 +55,22 @@
         color: #FF6700;
         font-size: 14px;
 }
+
+.footer-font {
+        color: #616161
+}
+
+.footer-font:hover {
+        color: #FF6700 !important;
+}
+
+.footer-btn {
+        border: solid 1px #FF6700 !important;
+        width: 150px !important;
+        color: #FF6700 !important;
+}
+
+.footer-btn:hover {
+        background-color: #FF6700 !important;
+        color: white !important;
+}
