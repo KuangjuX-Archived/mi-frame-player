@@ -66,13 +66,15 @@
 
 <script>
 import * as Three from 'three'
-import { fetchCloudData, getImageToBase64 } from './utils/index.js'
+import { fetchCloudData, getImageToBase64, genName, getCloudData } from './utils/index.js'
 
 // 这两个变量需要声明成全局变量
 let scene, mesh;
 export default {
   data() {
         return {
+            // 电云数据
+            cloud_data: [],
             // 使用 base64 编码后的图片
             encode_images: [],
             image_names: [],
@@ -138,34 +140,25 @@ export default {
     },
 
     mounted() {
-        this.init()
-        this.animate()
-        // 获取点图
-        let data = fetchCloudData('/data/velodyne_points/data/0000000000.bin')
+        // 获取所有电云数据
+        getCloudData(107, this.cloud_data)
+        console.log("点云数据", this.cloud_data)
+
         // 生成所有图片的名称
-        for(let i = 0; i <= 107; i++) {
-          let name = "0000000"
-          if(i < 10) {
-            name += '00'
-            name += i
-          }else if(i < 100) {
-            name += '0'
-            name += i
-          }else {
-            name += i
-          }
-          this.image_names.push(name)
-        }
-        console.log(this.image_names)
+        genName(107, this.image_names)
         // 将所有帧图片转化为 base64 编码
         for(let i in this.image_names) {
-          getImageToBase64('/data/image_00/data/' + this.image_names[i] + '.png', this.encode_images)
+          getImageToBase64('/data/image_00/data/' + this.image_names[i] + '.png', this.encode_images, i)
         }
-        console.log(this.encode_images)
 
+        // 图片按 100ms 每帧播放
         this.timer = setInterval(() => {
             this.counter = (this.counter + 1) % this.image_names.length
         }, 100)
+
+        // 渲染电云
+        this.init()
+        this.animate()
     },
 
     beforeDestroy(){
