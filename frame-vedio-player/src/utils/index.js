@@ -17,11 +17,14 @@ export async function fetchCloudData(url) {
 }
 
 export function parseCloudData(data) {
-    let buffer = new Array(data.length / 4 * 3)
-    for(let i = 0; i < data.length / 4; i++) {
-        buffer[3 * i] = data[4 * i]
-        buffer[3 * i + 1] = data[4 * i + 1]
-        buffer[3 * i + 2] = data[3 * i + 2]
+    // let buffer = new ArrayBuffer(data.byteLength / 4 * 3)
+    let int32data = new Float32Array(data)
+    let buffer = new Float32Array(int32data.length / 4 * 3)
+    // console.log("data: ", int32data)
+    for(let i = 0; i < int32data.length / 4; i++) {
+        buffer[3 * i] = int32data[4 * i]
+        buffer[3 * i + 1] = int32data[4 * i + 1]
+        buffer[3 * i + 2] = int32data[4 * i + 2]
     }
     return buffer
 }
@@ -47,9 +50,9 @@ export async function getCloudData(num, array) {
     genName(num, names)
     for(let order in names) {
         let url = "/data/velodyne_points/data/" + names[order] + ".bin"
-        let cloud_data = await fetchCloudData(url)
-        // array.push(cloud_data)
-        array[order] = cloud_data
+        let point_cloud = await fetchCloudData(url)
+        let data = parseCloudData(point_cloud)
+        array[order] = data
     }
 }
 

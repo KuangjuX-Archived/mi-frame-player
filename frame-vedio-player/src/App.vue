@@ -65,20 +65,21 @@
 </style>
 
 <script>
-import * as Three from 'three'
-import { fetchCloudData, getImageToBase64, genName, getCloudData } from './utils/index.js'
+import * as THREE from 'three'
+import { toRaw } from 'vue';
+import { getImageToBase64, genName, getCloudData } from './utils/index.js'
 
 // 这两个变量需要声明成全局变量
-let scene, mesh;
+let scene, fireflies;
+let mouseX = 0, mouseY = 0;
 export default {
   data() {
         return {
             // 电云数据
-            cloud_data: [],
+            cloud_data: new Array(),
             // 使用 base64 编码后的图片
-            encode_images: [],
-            image_names: [],
-            // frames: ["0000000000", "0000000001", "0000000002", "0000000003"],
+            encode_images: new Array(),
+            image_names: new Array(),
             times: null,
             counter: 0,
             // 使用 three.js 所需要的变量
@@ -106,57 +107,112 @@ export default {
 
 
     methods: {
-        checkUrl() {
-            console.log(this.counter)
+        // 按帧数绘制点云
+        pointsGenerator(frame) {
+          const geometry = new THREE.BufferGeometry();
+          const point_array = new Array();
+          const point_cloud = toRaw(this.cloud_data)
+          const points = point_cloud[frame]
+          for (let i = 0; i < points.length / 3; i++) {
+            let pX = points[3 * i];
+            let pY = points[3 * i + 1];
+            let pZ = points[3 * i + 2];
+            let vector = new THREE.Vector3(pX, pY, pZ);
+            point_array.push(vector)
+          }
+          geometry.setFromPoints(point_array)
+          return geometry;
+        },
+
+        onPointMove(event) {
+          if ( event.isPrimary === false ) return;
+
+          mouseX = event.clientX - windowHalfX;
+          mouseY = event.clientY - windowHalfY;
+        },
+
+        render() {
+          const time = Date.now() * 0.00005;
+
+          this.camera.position.x += ( mouseX - this.camera.position.x ) * 0.05;
+          this.camera.position.y += ( - mouseY - this.camera.position.y ) * 0.05;
+
+          this.camera.lookAt( scene.position );
+
+          for ( let i = 0; i < scene.children.length; i ++ ) {
+
+            const object = scene.children[ i ];
+
+            if ( object instanceof THREE.Points ) {
+
+              object.rotation.y = time * ( i < 4 ? i + 1 : - ( i + 1 ) );
+
+            }
+
+          }
+
+          // for ( let i = 0; i < materials.length; i ++ ) {
+
+          //   const color = parameters[ i ][ 0 ];
+
+          //   const h = ( 360 * ( color[ 0 ] + time ) % 360 ) / 360;
+          //   materials[ i ].color.setHSL( h, color[ 1 ], color[ 2 ] );
+
+          // }
+
+          this.renderer.render( scene, this.camera );
         },
 
         init() {
             let container = document.getElementById('container');
+            scene = new THREE.Scene();
+            this.camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight);
+            this.camera.position.set(5,5,5);
+            this.camera.lookAt(new THREE.Vector3(0,0,0));
+            scene.add(this.camera);
 
-            this.camera = new Three.PerspectiveCamera(70, container.clientWidth/container.clientHeight, 0.01, 10);
-            this.camera.position.z = 1;
+            let points = this.pointsGenerator(0);
+            points.attributes.position.needsUpdate = true
+            let material = new THREE.PointsMaterial({size: 0.1});
+            fireflies = new THREE.Points(points, material);
+            
+            scene.add(fireflies);
 
-            scene = new Three.Scene();
-
-            let geometry = new Three.BoxGeometry(0.2, 0.2, 0.2);
-            let material = new Three.MeshNormalMaterial();
-
-            mesh = new Three.Mesh(geometry, material);
-            scene.add(mesh);
-
-            this.renderer = new Three.WebGLRenderer({antialias: true});
+            this.renderer = new THREE.WebGLRenderer({ antialias: true });
             this.renderer.setSize(container.clientWidth, container.clientHeight);
             container.appendChild(this.renderer.domElement);
+            container.addEventListener( 'pointermove', this.onPointerMove );
         },
 
         animate() {
-          requestAnimationFrame(this.animate)
+            requestAnimationFrame(this.animate);
+            // 将点坐标修改为该帧点坐标
+            let points = this.pointsGenerator(this.counter);
+            fireflies.geometry = points
 
-          mesh.rotation.x += 0.01
-          mesh.rotation.y += 0.01
-
-          this.renderer.render(scene, this.camera)
+            this.render()
+            this.renderer.render(scene, this.camera);
         }
     },
 
-    mounted() {
+    async mounted() {
         // 获取所有电云数据
-        getCloudData(107, this.cloud_data)
+        await getCloudData(107, this.cloud_data)
         console.log("点云数据", this.cloud_data)
 
         // 生成所有图片的名称
         genName(107, this.image_names)
         // 将所有帧图片转化为 base64 编码
         for(let i in this.image_names) {
-          getImageToBase64('/data/image_00/data/' + this.image_names[i] + '.png', this.encode_images, i)
+          await getImageToBase64('/data/image_00/data/' + this.image_names[i] + '.png', this.encode_images, i)
         }
 
         // 图片按 100ms 每帧播放
         this.timer = setInterval(() => {
             this.counter = (this.counter + 1) % this.image_names.length
-        }, 100)
+        }, 500)
 
-        // 渲染电云
+        // 渲染点云
         this.init()
         this.animate()
     },
