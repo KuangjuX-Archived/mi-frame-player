@@ -4,7 +4,6 @@ export async function getImageToBase64(url, encode_images, order) {
     let blob = await response.blob()
     const reader = new FileReader()
     reader.onloadend = function() {
-        // encode_images.push(reader.result)
         encode_images[order] = reader.result
     }
     reader.readAsDataURL(blob)

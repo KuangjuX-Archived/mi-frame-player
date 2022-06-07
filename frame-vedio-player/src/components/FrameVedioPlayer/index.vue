@@ -36,7 +36,7 @@ export default {
       let ctx = frame_vedio_player.getContext("2d");
 
       // 定时使用 canvas 绘制帧
-      timer = setInterval(() => {
+      let timer = setInterval(() => {
         image.src = encode_images[props.counter];
         image.onload = () => {
           ctx.drawImage(image, 0, 0, frame_vedio_player.width, frame_vedio_player.height);

@@ -8,39 +8,15 @@
           </el-col>
           <el-col :span="12">
             <div>
-              <!-- <el-image :src= "`${encode_images[counter]}`" /> -->
               <FrameVedioPlayer :counter="counter"></FrameVedioPlayer>
             </div>
           </el-col>
         </el-row>
-        <div class="select">
-          <el-row :gutter="20">
-            <el-col :span="4" style="margin-top: 15px">
-              <el-select
-                v-model="speed"
-                multiple
-                filterable
-                allow-create
-                default-first-option
-                :reserve-keyword="false"
-                placeholder="视频帧播放速度"
-              >
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-            </el-col>
-            <el-col :span="20">
-              <div class="slider-demo-block">
-                <span span class="demonstration">视频播放帧数</span>
-                <el-slider v-model="counter" :max="encode_images.length" />
-              </div>
-            </el-col>
-          </el-row>
-        </div>
+        <ProgressBar
+          :frame_num="frame_num"
+          :counter="counter"
+          @emitSpeed="onSpeedChange"
+        ></ProgressBar>
       </el-main>
     </el-container>
   </div>
@@ -55,53 +31,32 @@
   color: #2c3e50;
   margin-top: 6 0px;
 }
-
-.select {
-  margin-top: 20px;
-  margin-left: 15%;
-  margin-right: 15%;
-}
 </style>
 
 <script>
 import * as THREE from "three";
 import { toRaw } from "vue";
-import { getImageToBase64, genName, getCloudData } from "./utils/index.js";
+import { getCloudData } from "./utils/index.js";
 import FrameVedioPlayer from "./components/FrameVedioPlayer/index.vue";
+import ProgressBar from "./components/ProgressBar/index.vue";
 // 这两个变量需要声明成全局变量
 let scene, fireflies;
 let mouseX = 0,
   mouseY = 0;
 export default {
-  components: { FrameVedioPlayer },
+  components: { FrameVedioPlayer, ProgressBar },
   data() {
     return {
+      // 帧数
+      frame_num: 108,
       // 点云数据
       cloud_data: new Array(),
-      // 使用 base64 编码后的图片
-      encode_images: new Array(),
-      image_names: new Array(),
       times: null,
       counter: 0,
       // 使用 three.js 所需要的变量
       camera: null,
       renderer: null,
-      // 复选框
-      options: [
-        {
-          value: 1,
-          label: "1x",
-        },
-        {
-          value: 2,
-          label: "2x",
-        },
-        {
-          value: 4,
-          label: "4x",
-        },
-      ],
-      speed: 0,
+      speed: 1,
     };
   },
   methods: {
@@ -121,11 +76,19 @@ export default {
       geometry.setFromPoints(point_array);
       return geometry;
     },
+
     onPointMove(event) {
       if (event.isPrimary === false) return;
       mouseX = event.clientX - windowHalfX;
       mouseY = event.clientY - windowHalfY;
     },
+
+    onSpeedChange(speed) {
+      console.log("onSpeedChange", speed);
+      this.speed = speed;
+      console.log("this speed", this.speed);
+    },
+
     render() {
       const time = Date.now() * 0.00005;
       this.camera.position.x += (mouseX - this.camera.position.x) * 0.05;
@@ -139,6 +102,7 @@ export default {
       }
       this.renderer.render(scene, this.camera);
     },
+
     init() {
       let container = document.getElementById("container");
       scene = new THREE.Scene();
@@ -159,6 +123,7 @@ export default {
       container.appendChild(this.renderer.domElement);
       // container.addEventListener( 'pointermove', this.onPointerMove );
     },
+
     animate() {
       requestAnimationFrame(this.animate);
       // 将点坐标修改为该帧点坐标
@@ -168,27 +133,22 @@ export default {
       this.renderer.render(scene, this.camera);
     },
   },
+
   async mounted() {
     // 获取所有电云数据
     await getCloudData(107, this.cloud_data);
-    // 生成所有图片的名称
-    genName(107, this.image_names);
-    // 将所有帧图片转化为 base64 编码
-    for (let i in this.image_names) {
-      await getImageToBase64(
-        "/data/image_00/data/" + this.image_names[i] + ".png",
-        this.encode_images,
-        i
-      );
-    }
     // 图片按 100ms 每帧播放
+    let internal = 1000 / this.speed;
     this.timer = setInterval(() => {
-      this.counter = (this.counter + 1) % this.image_names.length;
-    }, 500);
+      this.counter = (this.counter + 1) % this.frame_num;
+      internal = 1000 / this.speed;
+      console.log("时间间隔", internal);
+    }, internal);
     // 渲染点云
     this.init();
     this.animate();
   },
+
   beforeDestroy() {
     clearInterval(this.timer);
     this.timer = null;
