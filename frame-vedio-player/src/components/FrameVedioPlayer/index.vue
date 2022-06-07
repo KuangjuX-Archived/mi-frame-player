@@ -10,6 +10,7 @@ import { getImageToBase64, genName } from "../../utils/index.js";
 export default {
   props: {
     counter: Number,
+    frame_num: Number,
   },
 
   setup(props) {
@@ -19,7 +20,7 @@ export default {
 
     onMounted(async () => {
       // 生成所有图片的名称
-      genName(107, image_names);
+      genName(props.frame_num, image_names);
       // 将所有帧图片转化为 base64 编码
       for (let i in image_names) {
         await getImageToBase64(

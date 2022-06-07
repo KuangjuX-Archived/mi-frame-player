@@ -20,7 +20,7 @@
       <el-col :span="16">
         <div class="slider-demo-block">
           <span span class="demonstration">视频播放帧数</span>
-          <el-slider v-model="counter" :max="frame_num" />
+          <el-slider v-model="counter" :max="frame_num" @change="emitFrame" />
         </div>
       </el-col>
       <el-col :span="4">
@@ -65,10 +65,15 @@ export default {
       context.emit("emitSpeed", speed.value);
     };
 
+    const emitFrame = () => {
+      context.emit("emitFrame", props.counter);
+    };
+
     return {
       options,
       speed,
       emitSpeed,
+      emitFrame,
     };
   },
 

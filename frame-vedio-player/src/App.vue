@@ -8,7 +8,10 @@
           </el-col>
           <el-col :span="12">
             <div>
-              <FrameVedioPlayer :counter="counter"></FrameVedioPlayer>
+              <FrameVedioPlayer
+                :counter="counter"
+                :frame_num="frame_num"
+              ></FrameVedioPlayer>
             </div>
           </el-col>
         </el-row>
@@ -16,6 +19,7 @@
           :frame_num="frame_num"
           :counter="counter"
           @emitSpeed="onSpeedChange"
+          @emitFrame="onFrameChange"
         ></ProgressBar>
       </el-main>
     </el-container>
@@ -50,6 +54,10 @@ export default {
       speed.value = value;
     };
 
+    const onFrameChange = (value) => {
+      counter.value = value;
+    };
+
     watch(speed, (value) => {
       clearInterval(timer);
       let internal = 1000 / value;
@@ -66,7 +74,14 @@ export default {
       }, internal);
     });
 
-    return { frame_num, timer, counter, speed, onSpeedChange };
+    return {
+      frame_num,
+      timer,
+      counter,
+      speed,
+      onSpeedChange,
+      onFrameChange,
+    };
   },
 
   beforeDestroy() {
