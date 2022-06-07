@@ -1,4 +1,4 @@
-// 异步函数实际上不是顺序执行的，要将其转化为顺序执行
+// 异步函数实际上不是顺序执行的，要将其转化为顺序
 export async function getImageToBase64(url, encode_images, order) {
     let response = await fetch(url)
     let blob = await response.blob()
@@ -46,7 +46,7 @@ export function genName(num, array) {
 }
 
 export async function getCloudData(num, array) {
-    let names = []
+    let names = new Array()
     genName(num, names)
     for(let order in names) {
         let url = "/data/velodyne_points/data/" + names[order] + ".bin"
@@ -54,8 +54,4 @@ export async function getCloudData(num, array) {
         let data = parseCloudData(point_cloud)
         array[order] = data
     }
-}
-
-function parseStr(str) {
-
 }
