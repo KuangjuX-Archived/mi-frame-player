@@ -43,7 +43,7 @@ export default {
         };
       }, 100);
     });
-    return { image_names, encode_images };
+    return { image_names, encode_images, timer };
   },
 };
 </script>
