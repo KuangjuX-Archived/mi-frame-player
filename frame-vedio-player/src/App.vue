@@ -34,45 +34,39 @@
 </style>
 
 <script>
+import { onMounted, watch, ref } from "vue";
 import FrameVedioPlayer from "./components/FrameVedioPlayer/index.vue";
 import ProgressBar from "./components/ProgressBar/index.vue";
 import PointCloud from "./components/PointCloud/index.vue";
 export default {
   components: { FrameVedioPlayer, ProgressBar, PointCloud },
-  data() {
-    return {
-      // 帧数
-      frame_num: 108,
-      times: null,
-      counter: 0,
-      speed: 1,
+  setup(props) {
+    const frame_num = ref(108);
+    let timer = null;
+    const counter = ref(0);
+    const speed = ref(1);
+
+    const onSpeedChange = (value) => {
+      speed.value = value;
     };
-  },
 
-  watch: {
-    speed(value) {
-      clearInterval(this.timer);
+    watch(speed, (value) => {
+      clearInterval(timer);
       let internal = 1000 / value;
-      this.timer = setInterval(() => {
-        this.counter = (this.counter + 1) % this.frame_num;
+      timer = setInterval(() => {
+        counter.value = (counter.value + 1) % frame_num.value;
       }, internal);
-    },
-  },
+    });
 
-  methods: {
-    onSpeedChange(speed) {
-      console.log("onSpeedChange", speed);
-      this.speed = speed;
-      console.log("this speed", this.speed);
-    },
-  },
+    onMounted(async () => {
+      // 图片按 100ms 每帧播放
+      let internal = 1000 / speed.value;
+      timer = setInterval(() => {
+        counter.value = (counter.value + 1) % frame_num.value;
+      }, internal);
+    });
 
-  async mounted() {
-    // 图片按 100ms 每帧播放
-    let internal = 1000 / this.speed;
-    this.timer = setInterval(() => {
-      this.counter = (this.counter + 1) % this.frame_num;
-    }, internal);
+    return { frame_num, timer, counter, speed, onSpeedChange };
   },
 
   beforeDestroy() {

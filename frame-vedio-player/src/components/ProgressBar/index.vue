@@ -63,7 +63,6 @@ export default {
 
     const emitSpeed = () => {
       context.emit("emitSpeed", speed.value);
-      console.log(speed.value);
     };
 
     return {
