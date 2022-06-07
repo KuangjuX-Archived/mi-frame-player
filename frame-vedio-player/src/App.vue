@@ -59,6 +59,18 @@ export default {
       speed: 1,
     };
   },
+
+  watch: {
+    speed(value) {
+      clearInterval(this.timer);
+      this.timer = null;
+      let internal = 1000 / value;
+      this.timer = setInterval(() => {
+        this.counter = (this.counter + 1) % this.frame_num;
+      }, internal);
+    },
+  },
+
   methods: {
     // 按帧数绘制点云
     pointsGenerator(frame) {
@@ -141,8 +153,6 @@ export default {
     let internal = 1000 / this.speed;
     this.timer = setInterval(() => {
       this.counter = (this.counter + 1) % this.frame_num;
-      internal = 1000 / this.speed;
-      console.log("时间间隔", internal);
     }, internal);
     // 渲染点云
     this.init();
