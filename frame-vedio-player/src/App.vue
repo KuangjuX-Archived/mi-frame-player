@@ -21,6 +21,8 @@
           @emitSpeed="onSpeedChange"
           @emitFrame="onFrameChange"
           @flipVedio="onFlipVedio"
+          @addFrame="onAddFrame"
+          @subFrame="onSubFrame"
         ></ProgressBar>
       </el-main>
     </el-container>
@@ -76,6 +78,14 @@ export default {
       }
     };
 
+    const onAddFrame = (value) => {
+      counter.value = value;
+    };
+
+    const onSubFrame = (value) => {
+      counter.value = value;
+    };
+
     watch(speed, (value) => {
       clearInterval(timer);
       let internal = 1000 / value;
@@ -100,6 +110,8 @@ export default {
       onSpeedChange,
       onFrameChange,
       onFlipVedio,
+      onAddFrame,
+      onSubFrame,
     };
   },
 

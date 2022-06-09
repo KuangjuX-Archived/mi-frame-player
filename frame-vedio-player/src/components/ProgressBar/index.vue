@@ -1,7 +1,7 @@
 <template>
   <div class="panel">
     <el-row :gutter="20">
-      <el-col :span="4" style="margin-top: 15px">
+      <el-col :span="3" style="margin-top: 15px">
         <el-select
           v-model="speed"
           class="m-2"
@@ -17,7 +17,16 @@
           />
         </el-select>
       </el-col>
-      <el-col :span="4">
+      <el-col :span="2">
+        <div class="player-button">
+          <el-image
+            :src="'/src/assets/icon/rewind-symbol.png'"
+            @click="subFrame"
+          ></el-image>
+        </div>
+      </el-col>
+
+      <el-col :span="2">
         <div class="player-button">
           <el-image
             v-if="!start"
@@ -31,13 +40,22 @@
           ></el-image>
         </div>
       </el-col>
+
+      <el-col :span="2">
+        <div class="player-button">
+          <el-image
+            :src="'/src/assets/icon/fast-forward-media-control-button.png'"
+            @click="addFrame"
+          ></el-image>
+        </div>
+      </el-col>
       <el-col :span="12">
         <div class="slider-demo-block">
           <span span class="demonstration">视频播放帧数</span>
           <el-slider v-model="counter" :max="frame_num" @change="emitFrame" />
         </div>
       </el-col>
-      <el-col :span="4">
+      <el-col :span="3">
         <div>当前帧数: {{ counter }}</div>
         <div>当前速度: {{ getSpeed }}ms / 帧</div>
       </el-col>
@@ -91,6 +109,17 @@ export default {
       context.emit("emitFrame", props.counter);
     };
 
+    const addFrame = () => {
+      context.emit(
+        "addFrame",
+        props.counter + 5 <= props.frame_num ? props.counter + 5 : props.frame_num
+      );
+    };
+
+    const subFrame = () => {
+      context.emit("subFrame", props.counter - 5 >= 0 ? props.counter - 5 : 0);
+    };
+
     return {
       options,
       speed,
@@ -98,6 +127,8 @@ export default {
       emitSpeed,
       emitFrame,
       flipVedio,
+      addFrame,
+      subFrame,
     };
   },
 
