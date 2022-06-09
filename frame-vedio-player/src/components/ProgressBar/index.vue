@@ -1,5 +1,5 @@
 <template>
-  <div class="backgroud-nav panel">
+  <div class="panel">
     <el-row :gutter="20">
       <el-col :span="4" style="margin-top: 15px">
         <el-select
@@ -17,7 +17,21 @@
           />
         </el-select>
       </el-col>
-      <el-col :span="16">
+      <el-col :span="4">
+        <div class="player-button">
+          <el-image
+            v-if="!start"
+            :src="'/src/assets/icon/play.png'"
+            @click="flipVedio"
+          ></el-image>
+          <el-image
+            v-else
+            :src="'/src/assets/icon/pause.png'"
+            @click="flipVedio"
+          ></el-image>
+        </div>
+      </el-col>
+      <el-col :span="12">
         <div class="slider-demo-block">
           <span span class="demonstration">视频播放帧数</span>
           <el-slider v-model="counter" :max="frame_num" @change="emitFrame" />
@@ -32,7 +46,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 export default {
   props: {
     frame_num: Number,
@@ -59,7 +73,15 @@ export default {
       },
     ];
 
+    // 播放速度
     const speed = ref(1);
+    // 是否开始播放状态
+    const start = ref(false);
+
+    const flipVedio = () => {
+      start.value = !start.value;
+      context.emit("flipVedio", start.value);
+    };
 
     const emitSpeed = () => {
       context.emit("emitSpeed", speed.value);
@@ -72,8 +94,10 @@ export default {
     return {
       options,
       speed,
+      start,
       emitSpeed,
       emitFrame,
+      flipVedio,
     };
   },
 
@@ -87,14 +111,22 @@ export default {
 
 <style lang="scss">
 $backgroud-color: #fafafa;
-.backgroud-nav {
-  height: 100px;
-  background: $backgroud-color;
-}
 
 .panel {
+  height: 100px;
+  background: $backgroud-color;
   margin-top: 25px;
   margin-left: 5%;
   margin-right: 5%;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+div .player-button {
+  padding: 25px;
+  &:hover {
+    background-color: #dcdfe6;
+  }
 }
 </style>

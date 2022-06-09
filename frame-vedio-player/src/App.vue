@@ -2,11 +2,11 @@
   <div>
     <el-container>
       <el-main>
-        <el-row :gutter="10">
-          <el-col :span="12">
+        <el-row :gutter="20">
+          <el-col :span="8">
             <PointCloud :counter="counter"></PointCloud>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="16">
             <div>
               <FrameVedioPlayer
                 :counter="counter"
@@ -20,6 +20,7 @@
           :counter="counter"
           @emitSpeed="onSpeedChange"
           @emitFrame="onFrameChange"
+          @flipVedio="onFlipVedio"
         ></ProgressBar>
       </el-main>
     </el-container>
@@ -58,6 +59,23 @@ export default {
       counter.value = value;
     };
 
+    const onFlipVedio = (start) => {
+      if (start) {
+        // 如果 timer 不为空的话先将其注销
+        if (timer != null) {
+          clearInterval(timer);
+          timer = null;
+        }
+        let internal = 1000 / speed.value;
+        timer = setInterval(() => {
+          counter.value = (counter.value + 1) % frame_num.value;
+        }, internal);
+      } else {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
     watch(speed, (value) => {
       clearInterval(timer);
       let internal = 1000 / value;
@@ -68,10 +86,10 @@ export default {
 
     onMounted(async () => {
       // 图片按 100ms 每帧播放
-      let internal = 1000 / speed.value;
-      timer = setInterval(() => {
-        counter.value = (counter.value + 1) % frame_num.value;
-      }, internal);
+      // let internal = 1000 / speed.value;
+      // timer = setInterval(() => {
+      //   counter.value = (counter.value + 1) % frame_num.value;
+      // }, internal);
     });
 
     return {
@@ -81,6 +99,7 @@ export default {
       speed,
       onSpeedChange,
       onFrameChange,
+      onFlipVedio,
     };
   },
 

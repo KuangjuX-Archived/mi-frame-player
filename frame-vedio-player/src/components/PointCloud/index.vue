@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 500px; background-color: #000" id="container"></div>
+  <div id="container"></div>
 </template>
 
 <script>
@@ -73,7 +73,7 @@ export default {
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
       container.appendChild(renderer.domElement);
-      // container.addEventListener( 'pointermove', onPointerMove );
+      // container.addEventListener("pointermove", onPointMove);
     };
 
     const pointAnimate = () => {
@@ -97,3 +97,10 @@ export default {
   },
 };
 </script>
+
+<style lang="scss">
+#container {
+  height: 500px;
+  background-color: #000;
+}
+</style>
