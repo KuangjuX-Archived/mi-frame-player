@@ -4,19 +4,27 @@
 
 <script>
 import * as THREE from "three";
-import { toRaw, onMounted } from "vue";
+import { toRaw, onMounted, watch, ref } from "vue";
 import { getCloudData } from "../../utils/index.js";
+import { fetchPointCloud } from "../../utils/requests";
+import { LRUMap } from "lru_map";
 // 这两个变量需要声明成全局变量
 let scene, fireflies;
 let mouseX = 0,
   mouseY = 0;
+
+const fps = 60;
+let lastTime = 0;
 export default {
   props: {
+    frame_num: Number,
     counter: Number,
   },
   setup(props, context) {
-    // 点云数据
-    let cloud_data = new Array();
+    // 用于存储点云数据的 LRU
+    let lru = new LRUMap(20);
+    // 帧锁
+    let frame_lock = ref(false);
     // 使用 three.js 所需要的变量
     let camera;
     let renderer;
@@ -25,18 +33,32 @@ export default {
     const pointsGenerator = (frame) => {
       const geometry = new THREE.BufferGeometry();
       const point_array = new Array();
-      const point_cloud = toRaw(cloud_data);
-      const points = point_cloud[frame];
-      for (let i = 0; i < points.length / 3; i++) {
-        let pX = points[3 * i];
-        let pY = points[3 * i + 1];
-        let pZ = points[3 * i + 2];
-        let vector = new THREE.Vector3(pX, pY, pZ);
-        point_array.push(vector);
+      const points = lru.get(frame);
+      if (points !== undefined) {
+        for (let i = 0; i < points.length / 3; i++) {
+          let pX = points[3 * i];
+          let pY = points[3 * i + 1];
+          let pZ = points[3 * i + 2];
+          let vector = new THREE.Vector3(pX, pY, pZ);
+          point_array.push(vector);
+        }
+        geometry.setFromPoints(point_array);
       }
-      geometry.setFromPoints(point_array);
       return geometry;
     };
+
+    // 监听 couter 用来获取点云数据
+    watch(
+      () => props.counter,
+      async (value) => {
+        for (let i = value; i < value + 5; i++) {
+          if (!lru.get(i) && i < frame_num) {
+            let data = await fetchPointCloud(i);
+            lru.set(i, data);
+          }
+        }
+      }
+    );
 
     const onPointMove = (event) => {
       if (event.isPrimary === false) return;
@@ -65,6 +87,7 @@ export default {
       camera.position.set(0, 0, 60);
       camera.lookAt(new THREE.Vector3(0, 0, 0));
       scene.add(camera);
+      // 生成点数据
       let points = pointsGenerator(0);
       points.attributes.position.needsUpdate = true;
       let material = new THREE.PointsMaterial({ size: 0.1 });
@@ -78,22 +101,29 @@ export default {
 
     const pointAnimate = () => {
       requestAnimationFrame(pointAnimate);
+
       // 将点坐标修改为该帧点坐标
       let points = pointsGenerator(props.counter);
+      if (!points.attributes.hasOwnProperty("position")) {
+        return;
+      }
       fireflies.geometry = points;
       // render()
       renderer.render(scene, camera);
     };
 
     onMounted(async () => {
-      // 获取所有点云数据
-      await getCloudData(107, cloud_data);
+      // 首先获取五帧的数据
+      for (let i = 0; i < 5; i++) {
+        let data = await fetchPointCloud(i);
+        lru.set(i, data);
+      }
       // 渲染点云
       pointInit();
       pointAnimate();
     });
 
-    return { cloud_data, camera, renderer };
+    return { camera, renderer };
   },
 };
 </script>

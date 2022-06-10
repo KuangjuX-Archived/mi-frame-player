@@ -8,7 +8,8 @@ export const fetchImage = async(req, resp) => {
     const root = path.join(__dirname, '../../public')
     const image = root + "\\data\\image_00\\data\\" + generateName(image_id) + ".png"
     let bitmap = await fs.readFile(image, {encoding: 'base64'})
-    resp.send(bitmap)
+    let base64 = "data:image/jpg;base64," + bitmap
+    resp.send(base64)
 }
 
 // 异步获取点云并返回坐标

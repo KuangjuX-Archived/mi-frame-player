@@ -1,5 +1,7 @@
+
+
 // 异步函数实际上不是顺序执行的，要将其转化为顺序
-export async function getImageToBase64(url, encode_images, order) {
+export const getImageToBase64 = async(url, encode_images, order) => {
     let response = await fetch(url)
     let blob = await response.blob()
     const reader = new FileReader()
@@ -9,13 +11,13 @@ export async function getImageToBase64(url, encode_images, order) {
     reader.readAsDataURL(blob)
 }
 
-export async function fetchCloudData(url) {
+export const fetchCloudData = async(url) => {
     let response = await fetch(url)
     let data = await response.arrayBuffer()
     return data
 }
 
-export function parseCloudData(data) {
+export const parseCloudData = (data) => {
     // let buffer = new ArrayBuffer(data.byteLength / 4 * 3)
     let int32data = new Float32Array(data)
     let buffer = new Float32Array(int32data.length / 4 * 3)
@@ -28,7 +30,7 @@ export function parseCloudData(data) {
     return buffer
 }
 
-export function genName(num, array) {
+export const genName = (num, array) => {
     for(let i = 0; i <= num; i++) {
         let name = "0000000"
         if(i < 10) {
@@ -44,7 +46,7 @@ export function genName(num, array) {
       }
 }
 
-export async function getCloudData(num, array) {
+export const getCloudData = async(num, array) => {
     let names = new Array()
     genName(num, names)
     for(let order in names) {

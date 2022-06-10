@@ -5,8 +5,9 @@
 </template>
 
 <script>
-import { onMounted } from "vue";
-import { getImageToBase64, genName } from "../../utils/index.js";
+import { onMounted, watch } from "vue";
+import { LRUMap } from "lru_map";
+import { fetchImageBase64 } from "../../utils/requests.js";
 export default {
   props: {
     counter: Number,
@@ -14,20 +15,36 @@ export default {
   },
 
   setup(props) {
-    let image_names = new Array();
-    let encode_images = new Array();
     let timer = null;
+    let lru = new LRUMap(20);
 
+    // 监听 couter 用来获取点云数据
+    watch(
+      () => props.counter,
+      async (value) => {
+        for (let i = value; i < value + 5; i++) {
+          if (!lru.get(i) && i < frame_num) {
+            let data = await fetchImageBase64(i);
+            lru.set(i, data);
+          }
+        }
+      }
+    );
     onMounted(async () => {
       // 生成所有图片的名称
-      genName(props.frame_num, image_names);
+      // genName(props.frame_num, image_names);
       // 将所有帧图片转化为 base64 编码
-      for (let i in image_names) {
-        await getImageToBase64(
-          "/data/image_00/data/" + image_names[i] + ".png",
-          encode_images,
-          i
-        );
+      // for (let i in image_names) {
+      //   await getImageToBase64(
+      //     "/data/image_00/data/" + image_names[i] + ".png",
+      //     encode_images,
+      //     i
+      //   );
+      // }
+
+      for (let i = 0; i < 5; i++) {
+        let data = await fetchImageBase64(i);
+        lru.set(i, data);
       }
 
       let image = new Image();
@@ -37,14 +54,16 @@ export default {
       let ctx = frame_vedio_player.getContext("2d");
 
       // 定时使用 canvas 绘制帧
-      let timer = setInterval(() => {
-        image.src = encode_images[props.counter];
+      timer = setInterval(() => {
+        let base64 = lru.get(props.counter);
+        if (base64 === undefined) return;
+        image.src = base64;
         image.onload = () => {
           ctx.drawImage(image, 0, 0, frame_vedio_player.width, frame_vedio_player.height);
         };
       }, 100);
     });
-    return { image_names, encode_images, timer };
+    return { timer };
   },
 };
 </script>

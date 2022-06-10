@@ -4,7 +4,7 @@
       <el-main>
         <el-row :gutter="20">
           <el-col :span="8">
-            <PointCloud :counter="counter"></PointCloud>
+            <PointCloud :counter="counter" :frame_num="frame_num"></PointCloud>
           </el-col>
           <el-col :span="16">
             <div>
@@ -41,13 +41,22 @@
 </style>
 
 <script>
-import { onMounted, watch, ref } from "vue";
+import { onMounted, watch, ref, reactive } from "vue";
 import FrameVedioPlayer from "./components/FrameVedioPlayer/index.vue";
 import ProgressBar from "./components/ProgressBar/index.vue";
 import PointCloud from "./components/PointCloud/index.vue";
+import { fetchPointCloud } from "./utils/requests";
 export default {
   components: { FrameVedioPlayer, ProgressBar, PointCloud },
   setup(props) {
+    const frame = reactive({
+      frame_num: ref(108),
+      timer: null,
+      counter: ref(0),
+      speed: ref(0),
+      images: new Array(),
+      point_cloud: new Array(),
+    });
     const frame_num = ref(108);
     let timer = null;
     const counter = ref(0);
@@ -100,6 +109,7 @@ export default {
       // timer = setInterval(() => {
       //   counter.value = (counter.value + 1) % frame_num.value;
       // }, internal);
+      // let data = await fetchPointCloud(1);
     });
 
     return {
