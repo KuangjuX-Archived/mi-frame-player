@@ -1,5 +1,5 @@
 import express from 'express'; 
-import { fetchImage } from '../lib';
+import { fetchImage, fetchPointCloud } from '../lib';
 var router = express.Router();
 
 /* GET home page. */ 
@@ -8,5 +8,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/images/:imageid', fetchImage)
+
+router.get('/pointcloud/:frameid', fetchPointCloud)
 
 export default router;
