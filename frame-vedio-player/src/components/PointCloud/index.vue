@@ -4,8 +4,7 @@
 
 <script>
 import * as THREE from "three";
-import { toRaw, onMounted, watch, ref } from "vue";
-import { getCloudData } from "../../utils/index.js";
+import { onMounted, watch, ref } from "vue";
 import { fetchPointCloud } from "../../utils/requests";
 import { LRUMap } from "lru_map";
 // 这两个变量需要声明成全局变量
@@ -52,13 +51,20 @@ export default {
       () => props.counter,
       async (value) => {
         for (let i = value; i < value + 5; i++) {
-          if (!lru.get(i) && i < frame_num) {
+          if (!lru.get(i) && i < props.frame_num) {
             let data = await fetchPointCloud(i);
             lru.set(i, data);
           }
         }
+        if (frame_lock.value) {
+          frame_lock.value = false;
+        }
       }
     );
+
+    watch(frame_lock, (locked) => {
+      context.emit("frameLock", locked);
+    });
 
     const onPointMove = (event) => {
       if (event.isPrimary === false) return;
@@ -100,13 +106,18 @@ export default {
     };
 
     const pointAnimate = () => {
+      if (frame_lock.value) {
+        return;
+      }
       requestAnimationFrame(pointAnimate);
 
       // 将点坐标修改为该帧点坐标
       let points = pointsGenerator(props.counter);
       if (!points.attributes.hasOwnProperty("position")) {
+        frame_lock.value = true;
         return;
       }
+      // frame_lock.value = false;
       fireflies.geometry = points;
       // render()
       renderer.render(scene, camera);
