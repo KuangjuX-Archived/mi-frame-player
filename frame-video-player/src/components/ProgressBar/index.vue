@@ -17,24 +17,25 @@
           />
         </el-select>
       </el-col>
-      <el-col :span="2">
-        <div class="player-button" @click="subFrame">
-          <el-image :src="'/src/assets/icon/rewind-symbol.png'"></el-image>
-        </div>
-      </el-col>
-
-      <el-col :span="2">
-        <div class="player-button" @click="flipVedio">
-          <el-image v-if="!start" :src="'/src/assets/icon/play.png'"></el-image>
-          <el-image v-else :src="'/src/assets/icon/pause.png'"></el-image>
-        </div>
-      </el-col>
-
-      <el-col :span="2">
-        <div class="player-button" @click="addFrame">
-          <el-image
-            :src="'/src/assets/icon/fast-forward-media-control-button.png'"
-          ></el-image>
+      <el-col :span="6">
+        <div>
+          <el-row>
+            <el-col :span="8">
+              <div class="player-button" @click="subFrame">
+                <el-image :src="'/src/assets/icon/rewind-symbol.png'"></el-image></div
+            ></el-col>
+            <el-col :span="8">
+              <div class="player-button" @click="flipVedio">
+                <el-image v-if="!start" :src="'/src/assets/icon/play.png'"></el-image>
+                <el-image v-else :src="'/src/assets/icon/pause.png'"></el-image></div
+            ></el-col>
+            <el-col :span="8">
+              <div class="player-button" @click="addFrame">
+                <el-image
+                  :src="'/src/assets/icon/fast-forward-media-control-button.png'"
+                ></el-image></div
+            ></el-col>
+          </el-row>
         </div>
       </el-col>
       <el-col :span="12">
@@ -143,7 +144,8 @@ $backgroud-color: #fafafa;
 }
 
 div .player-button {
-  padding: 25px;
+  padding-top: 25px;
+  width: 25px;
   &:hover {
     background-color: #dcdfe6;
   }
