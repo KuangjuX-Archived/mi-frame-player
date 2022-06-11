@@ -106,11 +106,10 @@ export default {
     };
 
     const pointAnimate = () => {
+      requestAnimationFrame(pointAnimate);
       if (frame_lock.value) {
         return;
       }
-      requestAnimationFrame(pointAnimate);
-
       // 将点坐标修改为该帧点坐标
       let points = pointsGenerator(props.counter);
       if (!points.attributes.hasOwnProperty("position")) {

@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 export default {
   props: {
     frame_num: Number,
@@ -85,6 +85,8 @@ export default {
     // 是否开始播放状态
     const start = ref(false);
 
+    let screen_width = document.body.clientWidth;
+
     const flipVedio = () => {
       start.value = !start.value;
       context.emit("flipVedio", start.value);
@@ -109,10 +111,23 @@ export default {
       context.emit("subFrame", props.counter - 5 >= 0 ? props.counter - 5 : 0);
     };
 
+    // 监听页面宽度进而变换样式
+    watch(screen_width, (width) => {});
+
+    onMounted(() => {
+      window.onresize = () => {
+        return (() => {
+          window.screenWidth = document.body.clientWidth;
+          screen_width = window.screenWidth;
+        })();
+      };
+    });
+
     return {
       options,
       speed,
       start,
+      screen_width,
       emitSpeed,
       emitFrame,
       flipVedio,
@@ -150,7 +165,8 @@ $backgroud-color: #fafafa;
 
 div .player-button {
   padding-top: 25px;
-  width: 25px;
+  padding-bottom: 25px;
+  min-width: 25px;
   &:hover {
     background-color: #dcdfe6;
   }
