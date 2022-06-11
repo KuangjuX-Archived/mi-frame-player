@@ -1,7 +1,7 @@
 <template>
   <div class="panel">
     <el-row :gutter="20">
-      <el-col :span="3" style="margin-top: 15px">
+      <el-col :span="4" id="select-button">
         <el-select
           v-model="speed"
           class="m-2"
@@ -17,7 +17,7 @@
           />
         </el-select>
       </el-col>
-      <el-col :span="6">
+      <el-col :span="4">
         <div>
           <el-row>
             <el-col :span="8">
@@ -44,7 +44,7 @@
           <el-slider v-model="counter" :max="frame_num" @change="emitFrame" />
         </div>
       </el-col>
-      <el-col :span="3">
+      <el-col :span="4">
         <div>当前帧数: {{ counter }}</div>
         <div>当前速度: {{ getSpeed }}ms / 帧</div>
       </el-col>
@@ -131,6 +131,11 @@ export default {
 
 <style lang="scss">
 $backgroud-color: #fafafa;
+
+#select-button {
+  margin-top: 15px !important;
+  min-width: 100px;
+}
 
 .panel {
   height: 80px;
