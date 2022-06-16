@@ -1,14 +1,4 @@
-// polyfill 提供了这个方法用来获取设备的 pixel ratio
-export const getPixelRatio = (context) => {
-    let backingStore = context.backingStorePixelRatio ||
-        context.webkitBackingStorePixelRatio ||
-        context.mozBackingStorePixelRatio ||
-        context.msBackingStorePixelRatio ||
-        context.oBackingStorePixelRatio ||
-        context.backingStorePixelRatio || 1;
 
-    return (window.devicePixelRatio || 1) / backingStore;
-};
 
 // // 异步函数实际上不是顺序执行的，要将其转化为顺序
 // export const getImageToBase64 = async(url, encode_images, order) => {

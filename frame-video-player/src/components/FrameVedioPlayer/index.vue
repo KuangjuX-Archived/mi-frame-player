@@ -12,7 +12,6 @@
 <script>
 import { onMounted, watch, ref } from "vue";
 import { LRUMap } from "lru_map";
-import { getPixelRatio } from "../../utils/index.js";
 import { fetchImageBase64 } from "../../utils/requests.js";
 export default {
   props: {

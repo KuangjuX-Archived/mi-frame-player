@@ -4,6 +4,7 @@
 
 <script>
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { onMounted, watch, ref } from "vue";
 import { fetchPointCloud } from "../../utils/requests";
 import { LRUMap } from "lru_map";
@@ -27,6 +28,8 @@ export default {
     // 使用 three.js 所需要的变量
     let camera;
     let renderer;
+    let controls;
+    let moved = false;
 
     // 按帧数绘制点云
     const pointsGenerator = (frame) => {
@@ -93,15 +96,28 @@ export default {
       camera.position.set(0, 0, 60);
       camera.lookAt(new THREE.Vector3(0, 0, 0));
       scene.add(camera);
+
       // 生成点数据
       let points = pointsGenerator(0);
       points.attributes.position.needsUpdate = true;
       let material = new THREE.PointsMaterial({ size: 0.1 });
       fireflies = new THREE.Points(points, material);
       scene.add(fireflies);
+
+      // 设置 renderer
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(container.clientWidth, container.clientHeight);
+
+      // 设置控制器
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.minDistance = 50;
+      controls.maxDistance = 200;
+      controls.addEventListener("change", function () {
+        moved = true;
+      });
+
       container.appendChild(renderer.domElement);
+
       // container.addEventListener("pointermove", onPointMove);
     };
 
@@ -133,7 +149,7 @@ export default {
       pointAnimate();
     });
 
-    return { camera, renderer };
+    return { camera, renderer, controls, moved };
   },
 };
 </script>
