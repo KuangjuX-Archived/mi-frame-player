@@ -45,17 +45,6 @@ export default {
     });
 
     onMounted(async () => {
-      // 生成所有图片的名称
-      // genName(props.frame_num, image_names);
-      // 将所有帧图片转化为 base64 编码
-      // for (let i in image_names) {
-      //   await getImageToBase64(
-      //     "/data/image_00/data/" + image_names[i] + ".png",
-      //     encode_images,
-      //     i
-      //   );
-      // }
-
       for (let i = 0; i < 5; i++) {
         let data = await fetchImageBase64(i);
         lru.set(i, data);
@@ -75,13 +64,11 @@ export default {
           return;
         }
         image.src = base64;
-        const scale = window.devicePixelRatio;
-
-        const height = (image.height / image.width) * frame_vedio_player.width;
-        image.onload = () => {
+        image.onload = async () => {
+          // 使用 bitmap 解析渲染图片
+          const image_bitmap = await createImageBitmap(image);
           // 计算图片实际要渲染的高度
-          ctx.drawImage(image, 0, 0);
-          // ctx.drawImage(image, 0, 0, frame_vedio_player.width * scale, height * scale);
+          ctx.drawImage(image_bitmap, 0, 0);
         };
       }, 100);
     });
