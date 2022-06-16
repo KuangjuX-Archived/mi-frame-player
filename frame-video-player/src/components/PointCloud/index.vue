@@ -5,7 +5,7 @@
 <script>
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { onMounted, watch, ref } from "vue";
+import { onMounted, watch, ref, defineComponent } from "vue";
 import { fetchPointCloud } from "../../utils/requests";
 import { LRUMap } from "lru_map";
 // 这两个变量需要声明成全局变量

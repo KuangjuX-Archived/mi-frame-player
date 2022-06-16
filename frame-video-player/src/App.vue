@@ -28,6 +28,7 @@
           @flipVedio="onFlipVedio"
           @addFrame="onAddFrame"
           @subFrame="onSubFrame"
+          ref="progressBar"
         ></ProgressBar>
       </el-main>
     </el-container>
@@ -61,10 +62,6 @@ export default {
   components: { FrameVedioPlayer, ProgressBar, PointCloud },
   setup(props) {
     // 添加帧锁和图片锁，当帧和图片都不上锁时开始重新计时
-    // const lock = reactive({
-    //   frame_lock: ref(false),
-    //   image_lock: ref(false),
-    // });
     const lock = {
       frame_lock: ref(false),
       image_lock: ref(false),
@@ -74,6 +71,10 @@ export default {
     let timer = null;
     const counter = ref(0);
     const speed = ref(1);
+    // 是否在播放
+    let run = false;
+
+    const progressBar = ref(null);
 
     const onSpeedChange = (value) => {
       speed.value = value;
@@ -84,6 +85,7 @@ export default {
     };
 
     const onFlipVedio = (start) => {
+      run = start;
       if (start) {
         // 如果 timer 不为空的话先将其注销
         if (timer != null) {
@@ -109,17 +111,11 @@ export default {
     };
 
     const onFrameLock = (value) => {
-      console.log("App lock frame");
       lock.frame_lock.value = value;
-      // console.log("frame value", value);
-      // console.log("frame lock", lock.frame_lock);
     };
 
     const onImageLock = (value) => {
-      console.log("APP lock image");
       lock.image_lock.value = value;
-      // console.log("image value", value);
-      // console.log("image lock", lock.image_lock);
     };
 
     const startLoading = () => {
@@ -144,19 +140,17 @@ export default {
     });
 
     watch([lock.frame_lock, lock.image_lock], ([frame_locked, image_locked]) => {
-      // console.log("lock", locked);
-      console.log("frame lock", frame_locked);
-      console.log("image lock", image_locked);
       if (!frame_locked && !image_locked) {
         // 当帧和图片都不上锁时开始计时
-        let internal = 1000 / speed.value;
-        timer = setInterval(() => {
-          counter.value = (counter.value + 1) % frame_num.value;
-        }, internal);
+        if (run) {
+          let internal = 1000 / speed.value;
+          timer = setInterval(() => {
+            counter.value = (counter.value + 1) % frame_num.value;
+          }, internal);
+        }
         stopLoading();
       } else {
         // 当帧或者图片有一个上锁了的时候，注销定时器
-        console.log("counter lock");
         if (timer != null) {
           clearInterval(timer);
           timer = null;
@@ -165,13 +159,17 @@ export default {
       }
     });
 
-    onMounted(async () => {
-      // 图片按 100ms 每帧播放
-      // let internal = 1000 / speed.value;
-      // timer = setInterval(() => {
-      //   counter.value = (counter.value + 1) % frame_num.value;
-      // }, internal);
-      // let data = await fetchPointCloud(1);
+    // 添加快捷键监听
+    onMounted(() => {
+      document.onkeydown = (event) => {
+        if (event.key == "ArrowRight") {
+          progressBar.value.addFrame();
+        }
+
+        if (event.key == "ArrowLeft") {
+          progressBar.value.subFrame();
+        }
+      };
     });
 
     return {
@@ -179,6 +177,7 @@ export default {
       timer,
       counter,
       speed,
+      progressBar,
       onSpeedChange,
       onFrameChange,
       onFlipVedio,
