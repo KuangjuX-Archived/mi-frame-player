@@ -24,3 +24,6 @@ npm run server
 ```
 
 ## Features 
+- frame lock to pending source to loading
+- hot key to accelerate video playback
+- LRU Cache to store sources of picture and point cloud 
