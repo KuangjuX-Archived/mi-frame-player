@@ -5,7 +5,7 @@
 <script>
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { onMounted, watch, ref, defineComponent } from "vue";
+import { onMounted, watch, ref } from "vue";
 import { fetchPointCloud } from "../../utils/requests";
 import { LRUMap } from "lru_map";
 // 这两个变量需要声明成全局变量
@@ -33,18 +33,32 @@ export default {
 
     // 按帧数绘制点云
     const pointsGenerator = (frame) => {
-      const geometry = new THREE.BufferGeometry();
-      const point_array = new Array();
       const points = lru.get(frame);
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Array();
+      const colors = new Array();
       if (points !== undefined) {
         for (let i = 0; i < points.length / 3; i++) {
+          // 设置点坐标
           let pX = points[3 * i];
           let pY = points[3 * i + 1];
           let pZ = points[3 * i + 2];
-          let vector = new THREE.Vector3(pX, pY, pZ);
-          point_array.push(vector);
+          // let vector = new THREE.Vector3(pX, pY, pZ);
+          positions.push(pX, pY, pZ);
+          // 设置点颜色
+
+          let vx = 0.0;
+          let vy = 0.0;
+          let vz = 1.0 - 1.0 / pZ;
+          const color = new THREE.Color();
+          color.setRGB(vx, vy, vz);
+          colors.push(color.r, color.g, color.b);
+          // console.log(color.r, color.g, color.b);
         }
-        geometry.setFromPoints(point_array);
+        console.log(colors);
+        // geometry.setFromPoints(point_array);
+        geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
       }
       return geometry;
     };
@@ -100,7 +114,10 @@ export default {
       // 生成点数据
       let points = pointsGenerator(0);
       points.attributes.position.needsUpdate = true;
-      let material = new THREE.PointsMaterial({ size: 0.1 });
+      let material = new THREE.PointsMaterial({
+        size: 0.1,
+        vertexColors: true,
+      });
       fireflies = new THREE.Points(points, material);
       scene.add(fireflies);
 
